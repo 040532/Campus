@@ -1,11 +1,13 @@
-const express= require('express')
-const router =express.Router()
+const express = require("express");
+const router = express.Router();
 
-const EmployeeController= require('../controllers/EmpController')
+const { index, show, store, update, authenticate, login, logout } = require("../controllers/EmpController");
 
-router.get('/',EmployeeController.index)
-router.post('/show',EmployeeController.show)
-router.post('/store',EmployeeController.store)
-router.post('/update',EmployeeController.update)
+router.get("/", index);
+router.get("/show", authenticate, show);
+router.post("/store", store);
+router.post("/update", authenticate, update);
+router.post("/login", login);
+router.post("/logout", logout);
 
-module.exports=router
+module.exports = router;
