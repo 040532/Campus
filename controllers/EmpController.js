@@ -5,8 +5,10 @@ const Employee = require("../models/Empmodels");
 const authenticate = async (req, res, next) => {
     if (req.signedCookies.id) {
         req.body.user = await Employee.findById(req.signedCookies.id);
+        next();
+    } else {
+        res.redirect("/login");
     }
-    next();
 };
 
 const login = async (req, res, next) => {
@@ -14,13 +16,14 @@ const login = async (req, res, next) => {
     const verified = await bcrypt.compare(req.body.password, emp.password);
     if (verified) {
         res.cookie("id", emp._id.toString(), { httpOnly: true, signed: true });
-        res.json({ msg: "Logged in successfully" });
+        res.redirect("/dashboard");
     } else res.json({ err: "Incorrect username or password" });
 };
 
 const logout = (req, res, next) => {
     if (req.signedCookies.id) {
         res.clearCookie("id", { httpOnly: true, signed: true });
+        res.redirect("/login");
         res.json({ msg: "Logged out successfully" });
     } else {
         res.json({ err: "Login first !" });
@@ -46,7 +49,7 @@ const show = (req, res, next) => {
 const store = async (req, res, next) => {
     const hashedpwd = await bcrypt.hash(req.body.password, 10);
 
-    let employee = new Employee({
+    let employee = await Employee.create({
         name: req.body.name,
         designation: req.body.designation,
         email: req.body.email,
@@ -54,20 +57,12 @@ const store = async (req, res, next) => {
         age: req.body.age,
         password: hashedpwd,
     });
-    employee
-        .save()
-        .then((response) => {
-            console.log(employee._id);
-            res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
-            res.json({
-                message: "Employee Added Successfully!",
-            });
-        })
-        .catch((error) => {
-            res.json({
-                message: "An error Occured!",
-            });
-        });
+    console.log("hello");
+    console.log("emp: ", employee);
+
+    console.log(employee._id);
+    res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
+    res.redirect("/dashboard");
 };
 
 const update = (req, res, next) => {
