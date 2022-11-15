@@ -1,5 +1,5 @@
 const bcrypt = require("bcrypt");
-const cookieParser = require("cookie-parser");
+const rfg = require("referral-code-generator");
 const Employee = require("../models/Empmodels");
 
 const authenticate = async (req, res, next) => {
@@ -47,20 +47,22 @@ const show = (req, res, next) => {
     res.json(req.body.user);
 };
 const store = async (req, res, next) => {
-    const hashedpwd = await bcrypt.hash(req.body.password, 10);
+    const { name, designated, email, phone, age, refto } = req.body;
+    const reftoemp = await Employee.findOne({ refcode: refto });
+    if (!reftoemp) {
+        res.json({ err: "Incorrect referral code" });
+    } else {
+        reftoemp.n_referred++;
+        await reftoemp.save();
+    }
 
-    let employee = await Employee.create({
-        name: req.body.name,
-        designation: req.body.designation,
-        email: req.body.email,
-        phone: req.body.phone,
-        age: req.body.age,
-        password: hashedpwd,
-    });
-    console.log("hello");
-    console.log("emp: ", employee);
+    const password = await bcrypt.hash(req.body.password, 10);
+    const refcode = rfg.alphaNumeric("uppercase", 3, 1);
+    const n_referred = 0;
 
-    console.log(employee._id);
+    let employee = await Employee.create({ name, designated, email, phone, age, password, refcode, n_referred });
+    console.log(employee);
+
     res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
     res.redirect("/dashboard");
 };
@@ -74,7 +76,7 @@ const update = (req, res, next) => {
         phone: req.body.phone,
         age: req.body.age,
     };
-    Employee.findByIdAndUpdate(req.cookie, { $set: updatedData })
+    Employee.findByIdAndUpdate(req.signedCookies.id, { $set: updatedData })
         .then(() => {
             res.json({
                 message: "Employee updated Successfully!",

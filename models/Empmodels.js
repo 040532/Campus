@@ -22,6 +22,12 @@ const empSchema = new Schema(
         password: {
             type: String,
         },
+        refcode: {
+            type: String,
+        },
+        n_referred: {
+            type: Number,
+        },
     },
     { timestamps: true }
 );

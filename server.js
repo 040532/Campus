@@ -26,11 +26,11 @@ app.use(bodyParser.json());
 const root = "./public";
 app.get("/login", (req, res, next) => {
     res.sendFile("login.html", { root });
-})
+});
 app.get("/register", (req, res, next) => {
     res.sendFile("registration.html", { root });
 });
-app.get("/dashboard", (req, res, next) => {
+app.get("/dashboard", authenticate, (req, res, next) => {
     res.sendFile("dashboard.html", { root });
 });
 
