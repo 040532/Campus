@@ -13,11 +13,15 @@ const authenticate = async (req, res, next) => {
 
 const login = async (req, res, next) => {
     const emp = await Employee.findOne({ email: req.body.email });
-    const verified = await bcrypt.compare(req.body.password, emp.password);
-    if (verified) {
-        res.cookie("id", emp._id.toString(), { httpOnly: true, signed: true });
-        res.redirect("/dashboard");
-    } else res.json({ err: "Incorrect username or password" });
+    if (emp) {
+        const verified = await bcrypt.compare(req.body.password, emp.password);
+        if (verified) {
+            res.cookie("id", emp._id.toString(), { httpOnly: true, signed: true });
+            res.redirect("/dashboard");
+        } else res.json({ err: "Incorrect username or password" });
+    } else {
+        res.json("Email does not exists");
+    }
 };
 
 const logout = (req, res, next) => {
@@ -48,23 +52,45 @@ const show = (req, res, next) => {
 };
 const store = async (req, res, next) => {
     const { name, designated, email, phone, age, refto } = req.body;
-    const reftoemp = await Employee.findOne({ refcode: refto });
-    if (!reftoemp) {
-        res.json({ err: "Incorrect referral code" });
-    } else {
-        reftoemp.n_referred++;
-        await reftoemp.save();
+    // if referral code is entered by user
+    if (refto) {
+        const reftoemp = await Employee.findOne({ refCode: refto });
+        if (!reftoemp) {
+            res.json({ err: "Incorrect referral code" });
+        } else {
+            reftoemp.nReferred++;
+            await reftoemp.save();
+        }
     }
 
     const password = await bcrypt.hash(req.body.password, 10);
-    const refcode = rfg.alphaNumeric("uppercase", 3, 1);
-    const n_referred = 0;
+    let refCode = rfg.alphaNumeric("uppercase", 3, 1),
+        exists = true;
 
-    let employee = await Employee.create({ name, designated, email, phone, age, password, refcode, n_referred });
-    console.log(employee);
+    // generate new referral code if another user with same referral code exists
+    while (exists) {
+        const temp = await Employee.findOne({ refCode });
+        if (temp) {
+            exists = true;
+            refCode = rfg.alphaNumeric("uppercase", 3, 1);
+        } else {
+            exists = false;
+        }
+    }
+    const nReferred = 0;
 
-    res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
-    res.redirect("/dashboard");
+    
+    // check if another user with same email id exists
+    const tempEmp = await Employee.findOne({ email });
+    console.log(tempEmp);
+    if (!tempEmp) {
+        let employee = await Employee.create({ name, designated, email, phone, age, password, refCode, nReferred });
+        console.log(employee);
+        res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
+        res.redirect("/dashboard");
+    } else {
+        res.redirect("/register");
+    }
 };
 
 const update = (req, res, next) => {

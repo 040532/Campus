@@ -4,7 +4,7 @@ function displayText() {
   
 function countTo(){
     let from = 0;
-    let to = 79;
+    let to = 69;
     let step = to > from ? 1 : -1;
     let interval = 50;
 

@@ -4,7 +4,8 @@ const morgan = require("morgan");
 const bodyParser = require("body-parser");
 const cookieParser = require("cookie-parser");
 const EmployeeRoute = require("./routes/Emproutes");
-const { authenticate } = require("./controllers/EmpController");
+const { authenticate, logout } = require("./controllers/EmpController");
+const path = require("path");
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -18,6 +19,8 @@ db.once("open", () => {
     console.log("Database Connection Established!");
 });
 
+app.set("view engine", "ejs");
+app.set("views", path.join(__dirname, "views"));
 app.use(express.static("./public"));
 app.use(morgan("dev"));
 app.use(cookieParser("secret"));
@@ -26,14 +29,16 @@ app.use(bodyParser.json());
 
 const root = "./views";
 app.get("/login", (req, res, next) => {
-    res.sendFile("login.html", { root });
+    res.render("login");
 });
 app.get("/register", (req, res, next) => {
-    res.sendFile("registration.html", { root });
+    res.render("registration");
 });
 app.get("/dashboard", authenticate, (req, res, next) => {
-    res.sendFile("dashboard.html", { root });
+    const { user } = req.body;
+    res.render("dashboard", { user });
 });
+app.get("/logout", authenticate, logout);
 
 app.use("/api/employee", EmployeeRoute);
 

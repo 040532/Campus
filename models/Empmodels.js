@@ -5,7 +5,7 @@ const empSchema = new Schema(
         name: {
             type: String,
         },
-        designation: {
+        college: {
             type: String,
         },
         email: {
@@ -16,16 +16,13 @@ const empSchema = new Schema(
             type: Number,
             length: 10,
         },
-        age: {
-            type: Number,
-        },
         password: {
             type: String,
         },
-        refcode: {
+        refCode: {
             type: String,
         },
-        n_referred: {
+        nReferred: {
             type: Number,
         },
     },
