@@ -58,8 +58,9 @@ const store = async (req, res, next) => {
         if (!reftoemp) {
             res.json({ err: "Incorrect referral code" });
         } else {
-            reftoemp.nReferred++;
+            reftoemp.nReferred+=10;
             await reftoemp.save();
+            
         }
     }
 
@@ -77,7 +78,7 @@ const store = async (req, res, next) => {
             exists = false;
         }
     }
-    const nReferred = 0;
+    const nReferred = 100;
 
     
     // check if another user with same email id exists
@@ -87,9 +88,9 @@ const store = async (req, res, next) => {
         let employee = await Employee.create({ name, designated, email, phone, age, password, refCode, nReferred });
         console.log(employee);
         res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
-        res.redirect("/dashboard");
+        return res.redirect("/dashboard");
     } else {
-        res.redirect("/register");
+        return res.redirect("/register");
     }
 };
 
