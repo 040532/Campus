@@ -51,16 +51,15 @@ const show = (req, res, next) => {
     res.json(req.body.user);
 };
 const store = async (req, res, next) => {
-    const { name, designated, email, phone, age, refto } = req.body;
+    const { name, college, email, phone, refto, year } = req.body;
     // if referral code is entered by user
     if (refto) {
         const reftoemp = await Employee.findOne({ refCode: refto });
         if (!reftoemp) {
             res.json({ err: "Incorrect referral code" });
         } else {
-            reftoemp.nReferred+=10;
+            reftoemp.nReferred += 10;
             await reftoemp.save();
-            
         }
     }
 
@@ -80,12 +79,11 @@ const store = async (req, res, next) => {
     }
     const nReferred = 100;
 
-    
     // check if another user with same email id exists
     const tempEmp = await Employee.findOne({ email });
     console.log(tempEmp);
     if (!tempEmp) {
-        let employee = await Employee.create({ name, designated, email, phone, age, password, refCode, nReferred });
+        let employee = await Employee.create({ name, college, email, phone, year, password, refCode, nReferred });
         console.log(employee);
         res.cookie("id", employee._id.toString(), { httpOnly: true, signed: true });
         return res.redirect("/dashboard");

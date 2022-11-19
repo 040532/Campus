@@ -8,6 +8,9 @@ const empSchema = new Schema(
         college: {
             type: String,
         },
+        year: {
+            type: String,
+        },
         email: {
             type: String,
             unique: true,
